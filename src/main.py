@@ -1,30 +1,31 @@
-import random
-import operator
-import itertools
-import os
-from pathlib import Path
-
-import pygraphviz as pgv
-import numpy as np
-import pandas as pd
-from sklearn.model_selection import train_test_split
-
-from deap import algorithms
-from deap import base
-from deap import creator
-from deap import tools
 from deap import gp
+from deap import tools
+from deap import creator
+from deap import base
+from deap import algorithms
+from sklearn.model_selection import train_test_split
+import pandas as pd
+import numpy as np
+import pygraphviz as pgv
+from pathlib import Path
+import os
+import itertools
+import operator
+import random
+
+# Use 1 ou 2 para escolher qual configuracao executar
+CONFIG = 2
 
 
 def if_te(x: bool, a: float, b: float) -> float:
     return a if x else b
 
 
-def p_div(divisor: float, quocient: float):
+def p_div(divisor: float, quocient: float) -> float:
     try:
         return divisor / quocient
     except ZeroDivisionError:
-        return -1
+        return -1.0
 
 
 WORK_DIR = Path(os.path.dirname(os.path.abspath(__file__))).parents[0]
@@ -83,7 +84,10 @@ def main():
     stats.register("min", np.min)
     stats.register("max", np.max)
 
-    algorithms.eaSimple(pop, toolbox, 0.5, 0.2, 40, stats, halloffame=hof, verbose=None)
+    if CONFIG == 1:
+        algorithms.eaSimple(pop, toolbox, 0.5, 0.2, 40, stats, halloffame=hof, verbose=None)
+    else:
+        algorithms.eaMuCommaLambda(pop, toolbox, 100, 100, 0.5, 0.1, 40, stats, halloffame=hof, verbose=None)
 
     return hof
 
@@ -100,16 +104,7 @@ def print_tree(individual):
         n = g.get_node(i)
         n.attr["label"] = labels[i]
 
-    g.draw("tree.pdf")
-
-
-# def confusion_matrix(individual):
-#     func = toolbox.compile(expr=individual)
-
-#     TP = sum(bool(func(*customer[:30])) == True and bool(customer[30]) == True for customer in test)
-#     FN = sum(bool(func(*customer[:30])) == False and bool(customer[30]) == False for customer in test)
-#     FP = sum(bool(func(*customer[:30])) == True and bool(customer[30]) == False for customer in test)
-#     TN = sum(bool(func(*customer[:30])) == False and bool(customer[30]) == True for customer in test)
+    g.draw(f'tree_{CONFIG}.pdf')
 
 
 if __name__ == "__main__":
