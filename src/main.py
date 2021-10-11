@@ -13,7 +13,7 @@ import operator
 import random
 
 # Use 1 ou 2 para escolher qual configuracao executar
-CONFIG = 2
+CONFIG = 1
 
 LABELS = {'IN10': 'ServicoInternet_Fibra', 'IN11': 'ServicoInternet_Nao', 'IN12': 'ServicoSegurancaOnline_SemInternet', 'IN13': 'ServicoSegurancaOnline', 'IN14': 'ServicoBackupOnline_SemInternet', 'IN15': 'ServicoBackupOnline', 'IN16': 'ProtecaoEquipamento_SemInternet', 'IN17': 'ProtecaoEquipamento', 'IN18': 'ServicoSuporteTecnico_SemInternet', 'IN19': 'ServicoSuporteTecnico', 'IN20': 'ServicoStreamingTV_SemInternet', 'IN21': 'ServicoStreamingTV', 'IN22': 'ServicoFilmes_SemInternet', 'IN23': 'ServicoFilmes', 'IN24': 'TipoContrato_Anual', 'IN25': 'TipoContrato_Mensal', 'IN26': 'FaturaDigital', 'IN27': 'FormaPagamento_BoletoImpresso', 'IN28': 'FormaPagamento_CartaoCredito', 'IN29': 'FormaPagamento_DebitoAutomatico', 'IN30': 'Churn', 'IN0': 'MesesComoCliente', 'IN1': 'ValorMensal', 'IN2': 'TotalGasto', 'IN3': 'GeneroMasculino', 'IN4': 'Casado', 'IN5': 'Aposentado', 'IN6': 'Dependentes', 'IN7': 'ServicoTelefone', 'IN8': 'MultiplasLinhas_SemTelefone', 'IN9': 'MultiplasLinhas'}
 
