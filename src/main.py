@@ -30,7 +30,7 @@ def p_div(divisor: float, quocient: float):
 WORK_DIR = Path(os.path.dirname(os.path.abspath(__file__))).parents[0]
 DATA_DIR = WORK_DIR / 'data'
 
-train, test = train_test_split(pd.read_csv(DATA_DIR / 'clean_telecom_users.csv').to_numpy().tolist())
+train, test = train_test_split(pd.read_csv(DATA_DIR / 'clean_telecom_users.csv').to_numpy().tolist(), random_state=42)
 
 
 pset = gp.PrimitiveSetTyped("MAIN", list(itertools.repeat(float, 3)) + list(itertools.repeat(bool, 27)), bool, "IN")
@@ -83,7 +83,7 @@ def main():
     stats.register("min", np.min)
     stats.register("max", np.max)
 
-    algorithms.eaSimple(pop, toolbox, 0.5, 0.2, 40, stats, halloffame=hof)
+    algorithms.eaSimple(pop, toolbox, 0.5, 0.2, 40, stats, halloffame=hof, verbose=None)
 
     return hof
 
@@ -103,19 +103,35 @@ def print_tree(individual):
     g.draw("tree.pdf")
 
 
+# def confusion_matrix(individual):
+#     func = toolbox.compile(expr=individual)
+
+#     TP = sum(bool(func(*customer[:30])) == True and bool(customer[30]) == True for customer in test)
+#     FN = sum(bool(func(*customer[:30])) == False and bool(customer[30]) == False for customer in test)
+#     FP = sum(bool(func(*customer[:30])) == True and bool(customer[30]) == False for customer in test)
+#     TN = sum(bool(func(*customer[:30])) == False and bool(customer[30]) == True for customer in test)
+
+
 if __name__ == "__main__":
-    tree = main()[0]
-    print(f'f = {str(tree)}')
-    print_tree(tree)
 
-    func = toolbox.compile(expr=tree)
+    results = []
+    trees = []
 
-    TP = sum(bool(func(*customer[:30])) == True and bool(customer[30]) == True for customer in test)
-    FN = sum(bool(func(*customer[:30])) == False and bool(customer[30]) == False for customer in test)
-    FP = sum(bool(func(*customer[:30])) == True and bool(customer[30]) == False for customer in test)
-    TN = sum(bool(func(*customer[:30])) == False and bool(customer[30]) == True for customer in test)
+    for i in range(30):
+        print(f'Execucao {i+1}')
+        tree = main()[0]
+        func = toolbox.compile(expr=tree)
+        result = sum(bool(func(*customer[:30])) is bool(customer[30]) for customer in test) / len(test)
 
-    print(f'\nTP = {TP}, FN = {FN}, FP = {FP}, TN = {TN}')
-    print(f'Acertou = {TP + FN}')
-    print(f'Total = {TP + FN + FP + TN}')
-    print(f'Acuracia = {(TP + FN)/(TP + FN + FP + TN)}')
+        results.append(result)
+        trees.append(tree)
+
+    best_result = max(results)
+    best_tree = trees[results.index(best_result)]
+    worst_result = min(results)
+    mean_result = np.mean(results)
+    std_result = np.std(results)
+
+    print(f'\nMinimo = {worst_result:.6f}, Maximo = {best_result:.6f}, Media = {mean_result:.6f}, Desvio-Padrao = {std_result:.6f}')
+    print(f'f = {str(best_tree)}')
+    print_tree(best_tree)
