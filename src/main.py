@@ -6,7 +6,6 @@ from deap import algorithms
 from sklearn.model_selection import train_test_split
 import pandas as pd
 import numpy as np
-import pygraphviz as pgv
 from pathlib import Path
 import os
 import itertools
@@ -15,6 +14,8 @@ import random
 
 # Use 1 ou 2 para escolher qual configuracao executar
 CONFIG = 1
+
+LABELS = {'IN10': 'ServicoInternet_Fibra', 'IN11': 'ServicoInternet_Nao', 'IN12': 'ServicoSegurancaOnline_SemInternet', 'IN13': 'ServicoSegurancaOnline', 'IN14': 'ServicoBackupOnline_SemInternet', 'IN15': 'ServicoBackupOnline', 'IN16': 'ProtecaoEquipamento_SemInternet', 'IN17': 'ProtecaoEquipamento', 'IN18': 'ServicoSuporteTecnico_SemInternet', 'IN19': 'ServicoSuporteTecnico', 'IN20': 'ServicoStreamingTV_SemInternet', 'IN21': 'ServicoStreamingTV', 'IN22': 'ServicoFilmes_SemInternet', 'IN23': 'ServicoFilmes', 'IN24': 'TipoContrato_Anual', 'IN25': 'TipoContrato_Mensal', 'IN26': 'FaturaDigital', 'IN27': 'FormaPagamento_BoletoImpresso', 'IN28': 'FormaPagamento_CartaoCredito', 'IN29': 'FormaPagamento_DebitoAutomatico', 'IN30': 'Churn', 'IN0': 'MesesComoCliente', 'IN1': 'ValorMensal', 'IN2': 'TotalGasto', 'IN3': 'GeneroMasculino', 'IN4': 'Casado', 'IN5': 'Aposentado', 'IN6': 'Dependentes', 'IN7': 'ServicoTelefone', 'IN8': 'MultiplasLinhas_SemTelefone', 'IN9': 'MultiplasLinhas'}
 
 
 def if_te(x: bool, a: float, b: float) -> float:
@@ -92,28 +93,12 @@ def main():
     return hof
 
 
-def print_tree(individual):
-    nodes, edges, labels = gp.graph(individual)
-
-    g = pgv.AGraph()
-    g.add_nodes_from(nodes)
-    g.add_edges_from(edges)
-    g.layout(prog="dot")
-
-    for i in nodes:
-        n = g.get_node(i)
-        n.attr["label"] = labels[i]
-
-    g.draw(f'tree_{CONFIG}.pdf')
-
-
 if __name__ == "__main__":
 
     results = []
     trees = []
 
     for i in range(30):
-        print(f'Execucao {i+1}')
         tree = main()[0]
         func = toolbox.compile(expr=tree)
         result = sum(bool(func(*customer[:30])) is bool(customer[30]) for customer in test) / len(test)
@@ -127,6 +112,13 @@ if __name__ == "__main__":
     mean_result = np.mean(results)
     std_result = np.std(results)
 
-    print(f'\nMinimo = {worst_result:.6f}, Maximo = {best_result:.6f}, Media = {mean_result:.6f}, Desvio-Padrao = {std_result:.6f}')
-    print(f'f = {str(best_tree)}')
-    print_tree(best_tree)
+    print(f'Configuracao {CONFIG}')
+
+    print(f'\nMinimo = {worst_result:.6f}, Maximo = {best_result:.6f}, Media = {mean_result:.6f}, Desvio-Padrao = {std_result:.6f}\n')
+
+    f = str(best_tree)
+    for original, new in LABELS.items():
+        f = f.replace(original, new)
+
+    print(f'f = {f}\n')
+    print(f'Execucoes = {", ".join(str(x) for x in results)}')

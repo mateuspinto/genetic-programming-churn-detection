@@ -1,0 +1,7 @@
+Configuracao 1
+
+Minimo = 0.730254, Maximo = 0.787818, Media = 0.758322, Desvio-Padrao = 0.012547
+
+f = lt(if_te(or_(ServicoStreamingTV_SemInternet, not_(ServicoInternet_Fibra)), mul(mul(p_div(MesesComoCliente, MesesComoCliente), if_te(ServicoStreamingTV_SemInternet, TotalGasto, ValorMensal)), if_te(xor(ProtecaoEquipamento_SemInternet, ServicoBackupOnline), p_div(ValorMensal, TotalGasto), sub(MesesComoCliente, TotalGasto))), sub(add(mul(TotalGasto, ValorMensal), mul(ValorMensal, TotalGasto)), mul(if_te(xor(or_(MultiplasLinhas_SemTelefone, FormaPagamento_CartaoCredito), eq(TotalGasto, ValorMensal)), TotalGasto, TotalGasto), mul(ValorMensal, ValorMensal)))), add(p_div(if_te(eq(ValorMensal, ValorMensal), add(TotalGasto, MesesComoCliente), p_div(MesesComoCliente, MesesComoCliente)), add(TotalGasto, mul(TotalGasto, ValorMensal))), mul(sub(sub(TotalGasto, ValorMensal), sub(ValorMensal, MesesComoCliente)), sub(TotalGasto, mul(TotalGasto, MesesComoCliente)))))
+
+Execucoes = 0.7603748326639893, 0.7597054886211513, 0.7563587684069611, 0.7563587684069611, 0.7704149933065596, 0.7563587684069611, 0.784471218206158, 0.7550200803212851, 0.7576974564926372, 0.7563587684069611, 0.7597054886211513, 0.7657295850066934, 0.7563587684069611, 0.7563587684069611, 0.7563587684069611, 0.7563587684069611, 0.7302543507362784, 0.7878179384203481, 0.7302543507362784, 0.7563587684069611, 0.7744310575635877, 0.7583668005354752, 0.7302543507362784, 0.7717536813922357, 0.7563587684069611, 0.7556894243641231, 0.7563587684069611, 0.7670682730923695, 0.7543507362784472, 0.7563587684069611
