@@ -13,7 +13,7 @@ import operator
 import random
 
 # Use 1 ou 2 para escolher qual configuracao executar
-CONFIG = 1
+CONFIG = 2
 
 LABELS = {'IN10': 'ServicoInternet_Fibra', 'IN11': 'ServicoInternet_Nao', 'IN12': 'ServicoSegurancaOnline_SemInternet', 'IN13': 'ServicoSegurancaOnline', 'IN14': 'ServicoBackupOnline_SemInternet', 'IN15': 'ServicoBackupOnline', 'IN16': 'ProtecaoEquipamento_SemInternet', 'IN17': 'ProtecaoEquipamento', 'IN18': 'ServicoSuporteTecnico_SemInternet', 'IN19': 'ServicoSuporteTecnico', 'IN20': 'ServicoStreamingTV_SemInternet', 'IN21': 'ServicoStreamingTV', 'IN22': 'ServicoFilmes_SemInternet', 'IN23': 'ServicoFilmes', 'IN24': 'TipoContrato_Anual', 'IN25': 'TipoContrato_Mensal', 'IN26': 'FaturaDigital', 'IN27': 'FormaPagamento_BoletoImpresso', 'IN28': 'FormaPagamento_CartaoCredito', 'IN29': 'FormaPagamento_DebitoAutomatico', 'IN30': 'Churn', 'IN0': 'MesesComoCliente', 'IN1': 'ValorMensal', 'IN2': 'TotalGasto', 'IN3': 'GeneroMasculino', 'IN4': 'Casado', 'IN5': 'Aposentado', 'IN6': 'Dependentes', 'IN7': 'ServicoTelefone', 'IN8': 'MultiplasLinhas_SemTelefone', 'IN9': 'MultiplasLinhas'}
 
@@ -95,30 +95,48 @@ def main():
 
 if __name__ == "__main__":
 
-    results = []
+    results_test = []
+    results_train = []
     trees = []
 
     for i in range(30):
         tree = main()[0]
         func = toolbox.compile(expr=tree)
-        result = sum(bool(func(*customer[:30])) is bool(customer[30]) for customer in test) / len(test)
+        result_test = sum(bool(func(*customer[:30])) is bool(customer[30]) for customer in test) / len(test)
+        result_train = sum(bool(func(*customer[:30])) is bool(customer[30]) for customer in train) / len(train)
 
-        results.append(result)
+        results_test.append(result_test)
+        results_train.append(result_train)
         trees.append(tree)
 
-    best_result = max(results)
-    best_tree = trees[results.index(best_result)]
-    worst_result = min(results)
-    mean_result = np.mean(results)
-    std_result = np.std(results)
+    TEST_BEST_RESULT = max(results_test)
+    TEST_BEST_TREE = trees[results_test.index(TEST_BEST_RESULT)]
+    TEST_WORST_RESULT = min(results_test)
+    TEST_MEAN_RESULT = np.mean(results_test)
+    TEST_STD_RESULT = np.std(results_test)
+
+    TRAIN_BEST_RESULT = max(results_train)
+    TRAIN_BEST_TREE = trees[results_train.index(TRAIN_BEST_RESULT)]
+    TRAIN_WORST_RESULT = min(results_train)
+    TRAIN_MEAN_RESULT = np.mean(results_train)
+    TRAIN_STD_RESULT = np.std(results_train)
+
+    test_f = str(TEST_BEST_TREE)
+    for original, new in LABELS.items():
+        test_f = test_f.replace(original, new)
+
+    train_f = str(TRAIN_BEST_TREE)
+    for original, new in LABELS.items():
+        train_f = train_f.replace(original, new)
 
     print(f'Configuracao {CONFIG}')
 
-    print(f'\nMinimo = {worst_result:.6f}, Maximo = {best_result:.6f}, Media = {mean_result:.6f}, Desvio-Padrao = {std_result:.6f}\n')
+    print('\n\nTeste -------------------------------')
+    print(f'Minimo = {TEST_WORST_RESULT:.6f}, Maximo = {TEST_BEST_RESULT:.6f}, Media = {TEST_MEAN_RESULT:.6f}, Desvio-Padrao = {TEST_STD_RESULT:.6f}')
+    print(f'Execucoes = {", ".join(str(x) for x in results_test)}')
+    print(f'\nf = {test_f}')
 
-    f = str(best_tree)
-    for original, new in LABELS.items():
-        f = f.replace(original, new)
-
-    print(f'f = {f}\n')
-    print(f'Execucoes = {", ".join(str(x) for x in results)}')
+    print('\n\nTreino -------------------------------')
+    print(f'Minimo = {TRAIN_WORST_RESULT:.6f}, Maximo = {TRAIN_BEST_RESULT:.6f}, Media = {TRAIN_MEAN_RESULT:.6f}, Desvio-Padrao = {TRAIN_STD_RESULT:.6f}\n')
+    print(f'Execucoes = {", ".join(str(x) for x in results_train)}')
+    print(f'\nf = {train_f}\n')
