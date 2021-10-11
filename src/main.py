@@ -14,7 +14,7 @@ import operator
 import random
 
 # Use 1 ou 2 para escolher qual configuracao executar
-CONFIG = 2
+CONFIG = 1
 
 
 def if_te(x: bool, a: float, b: float) -> float:
