@@ -15,27 +15,39 @@ from deap import creator
 from deap import tools
 from deap import gp
 
+
+def if_te(x: bool, a: float, b: float) -> float:
+    return a if x else b
+
+
+def p_div(divisor: float, quocient: float):
+    try:
+        return divisor / quocient
+    except ZeroDivisionError:
+        return -1
+
+
 WORK_DIR = Path(os.path.dirname(os.path.abspath(__file__))).parents[0]
 DATA_DIR = WORK_DIR / 'data'
 
 train, test = train_test_split(pd.read_csv(DATA_DIR / 'clean_telecom_users.csv').to_numpy().tolist())
+
+
 pset = gp.PrimitiveSetTyped("MAIN", list(itertools.repeat(float, 3)) + list(itertools.repeat(bool, 27)), bool, "IN")
 
 pset.addPrimitive(operator.and_, [bool, bool], bool)
 pset.addPrimitive(operator.or_, [bool, bool], bool)
+pset.addPrimitive(operator.xor, [bool, bool], bool)
 pset.addPrimitive(operator.not_, [bool], bool)
 
-
-def if_then_else(input: bool, output1: float, output2: float) -> float:
-    if input:
-        return output1
-    else:
-        return output2
-
+pset.addPrimitive(operator.add, [float, float], float)
+pset.addPrimitive(operator.sub, [float, float], float)
+pset.addPrimitive(operator.mul, [float, float], float)
+pset.addPrimitive(p_div, [float, float], float)
 
 pset.addPrimitive(operator.lt, [float, float], bool)
 pset.addPrimitive(operator.eq, [float, float], bool)
-pset.addPrimitive(if_then_else, [bool, float, float], float)
+pset.addPrimitive(if_te, [bool, float, float], float)
 
 creator.create("FitnessMax", base.Fitness, weights=(1.0,))
 creator.create("Individual", gp.PrimitiveTree, fitness=creator.FitnessMax)
@@ -47,7 +59,7 @@ toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 toolbox.register("compile", gp.compile, pset=pset)
 
 
-def evalSpambase(individual):
+def evaluate_individual(individual):
     func = toolbox.compile(expr=individual)
     customers_sample = random.sample(train, 400)
     result = sum(bool(func(*customer[:30])) is bool(customer[30]) for customer in customers_sample)
@@ -55,7 +67,7 @@ def evalSpambase(individual):
     return result,
 
 
-toolbox.register("evaluate", evalSpambase)
+toolbox.register("evaluate", evaluate_individual)
 toolbox.register("select", tools.selTournament, tournsize=3)
 toolbox.register("mate", gp.cxOnePoint)
 toolbox.register("expr_mut", gp.genFull, min_=0, max_=2)
@@ -63,7 +75,6 @@ toolbox.register("mutate", gp.mutUniform, expr=toolbox.expr_mut, pset=pset)
 
 
 def main():
-    random.seed(10)
     pop = toolbox.population(n=100)
     hof = tools.HallOfFame(1)
     stats = tools.Statistics(lambda ind: ind.fitness.values)
@@ -74,7 +85,7 @@ def main():
 
     algorithms.eaSimple(pop, toolbox, 0.5, 0.2, 40, stats, halloffame=hof)
 
-    return pop, stats, hof
+    return hof
 
 
 def print_tree(individual):
@@ -93,13 +104,18 @@ def print_tree(individual):
 
 
 if __name__ == "__main__":
-    (pop, stats, hof) = main()
-    print(str(hof[0]))
-    print_tree(hof[0])
+    tree = main()[0]
+    print(f'f = {str(tree)}')
+    print_tree(tree)
 
-    func = toolbox.compile(expr=hof[0])
+    func = toolbox.compile(expr=tree)
 
-    result = sum(bool(func(*customer[:30])) is bool(customer[30]) for customer in test)
+    TP = sum(bool(func(*customer[:30])) == True and bool(customer[30]) == True for customer in test)
+    FN = sum(bool(func(*customer[:30])) == False and bool(customer[30]) == False for customer in test)
+    FP = sum(bool(func(*customer[:30])) == True and bool(customer[30]) == False for customer in test)
+    TN = sum(bool(func(*customer[:30])) == False and bool(customer[30]) == True for customer in test)
 
-    print(f'Acertou = {result}')
-    print(f'Total = {len(test)}')
+    print(f'\nTP = {TP}, FN = {FN}, FP = {FP}, TN = {TN}')
+    print(f'Acertou = {TP + FN}')
+    print(f'Total = {TP + FN + FP + TN}')
+    print(f'Acuracia = {(TP + FN)/(TP + FN + FP + TN)}')
